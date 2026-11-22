@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Verificação{% endblock %}
+{% block content %}
+{% set info = {
+  'valido': ('ok', 'Acesso liberado', 'Cartão válido para este horário.'),
+  'agendado': ('warn', 'Fora do horário', 'A visita ainda não começou.'),
+  'expirado': ('bad', 'Cartão expirado', 'O horário da visita já terminou.'),
+  'revogado': ('bad', 'Cartão revogado', 'Este cartão foi cancelado pela recepção.'),
+  'inexistente': ('bad', 'Cartão não encontrado', 'O código lido não corresponde a nenhum cartão.'),
+} %}
+{% set cls, titulo, texto = info[situacao] %}
+<section class="card narrow verify verify-{{ cls }}">
+  <div class="verify-icon">{{ '✔' if cls == 'ok' else ('!' if cls == 'warn' else '✖') }}</div>
+  <h1>{{ titulo }}</h1>
+  <p>{{ texto }}</p>
+  {% if p %}
+  <dl class="dl">
+    <dt>Visitante</dt><dd>{{ p.visitor_name }}</dd>
+    <dt>Anfitrião</dt><dd>{{ p.host_name }}</dd>
+    <dt>Período</dt><dd>{{ p.visit_start.strftime('%d/%m/%Y %H:%M') }} – {{ p.visit_end.strftime('%d/%m/%Y %H:%M') }}</dd>
+    <dt>Código</dt><dd><code>{{ p.short_code }}</code></dd>
+  </dl>
+  {% endif %}
+</section>
+{% endblock %}

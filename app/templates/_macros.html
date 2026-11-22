@@ -1,0 +1,13 @@
+{% macro status_badge(p) -%}
+  {%- set s = p.validity() -%}
+  {%- set labels = {'valido': 'Válido agora', 'agendado': 'Agendado', 'expirado': 'Expirado', 'revogado': 'Revogado'} -%}
+  <span class="badge badge-{{ s }}">{{ labels[s] }}</span>
+{%- endmacro %}
+
+{% macro field(f, cls='') -%}
+  <div class="field {{ cls }}">
+    {{ f.label }}
+    {{ f(class_='input' ~ (' invalid' if f.errors else '')) }}
+    {% for e in f.errors %}<p class="error">{{ e }}</p>{% endfor %}
+  </div>
+{%- endmacro %}

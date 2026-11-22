@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Cartões{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Cartões de visitante</h1>
+  <a class="btn btn-primary" href="{{ url_for('passes.create') }}">+ Novo cartão</a>
+</div>
+
+<form class="filters" method="get">
+  <input class="input" type="search" name="q" value="{{ q }}" placeholder="Buscar por visitante, empresa, anfitrião ou e-mail">
+  <select class="input" name="situacao">
+    <option value="">Todas as situações</option>
+    {% for value, label in [('valido','Válido agora'),('agendado','Agendado'),('expirado','Expirado'),('revogado','Revogado')] %}
+      <option value="{{ value }}" {% if situacao == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn" type="submit">Filtrar</button>
+</form>
+
+{% if passes %}
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr><th>Visitante</th><th>Empresa</th><th>Anfitrião</th><th>Entrada</th><th>Saída</th><th>Situação</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for p in passes %}
+      <tr>
+        <td><strong>{{ p.visitor_name }}</strong><br><small class="muted">{{ p.visitor_email }}</small></td>
+        <td>{{ p.company or '—' }}</td>
+        <td>{{ p.host_name }}</td>
+        <td>{{ p.visit_start.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ p.visit_end.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ status_badge(p) }}</td>
+        <td><a href="{{ url_for('passes.detail', pass_id=p.id) }}">Abrir</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card empty">
+  <p>Nenhum cartão encontrado.</p>
+  <a class="btn btn-primary" href="{{ url_for('passes.create') }}">Criar o primeiro cartão</a>
+</div>
+{% endif %}
+{% endblock %}

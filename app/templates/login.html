@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Entrar{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Entrar</h1>
+  <p class="muted">Acesso da recepção para gerenciar cartões de visitante.</p>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    {{ field(form.email) }}
+    {{ field(form.password) }}
+    {{ form.submit(class_='btn btn-primary btn-block') }}
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Visitantes@2024}
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  app:
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: mssql+pyodbc://sa:${MSSQL_SA_PASSWORD_URLENC:-Visitantes%402024}@db:1433/visitantes?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+      BASE_URL: ${BASE_URL:-http://localhost:8080}
+      GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/service-account.json
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./credentials:/app/credentials:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mssql-data:

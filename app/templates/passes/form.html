@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>{{ title }}</h1>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <h2>Visitante</h2>
+    <div class="grid">
+      {{ field(form.visitor_name) }}
+      {{ field(form.visitor_email) }}
+      {{ field(form.visitor_document) }}
+      {{ field(form.company) }}
+    </div>
+    <h2>Visita</h2>
+    <div class="grid">
+      {{ field(form.host_name) }}
+      {{ field(form.host_email) }}
+      {{ field(form.visit_start) }}
+      {{ field(form.visit_end) }}
+      {{ field(form.purpose, 'span-2') }}
+    </div>
+    <div class="actions">
+      <a class="btn" href="{{ url_for('passes.detail', pass_id=p.id) if p else url_for('passes.index') }}">Cancelar</a>
+      {{ form.submit(class_='btn btn-primary') }}
+    </div>
+  </form>
+</section>
+{% endblock %}

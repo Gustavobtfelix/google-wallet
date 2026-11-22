@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}{{ p.visitor_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ p.visitor_name }} {{ status_badge(p) }}</h1>
+  <a href="{{ url_for('passes.index') }}">← Voltar</a>
+</div>
+
+<div class="detail-grid">
+  <section class="card">
+    <h2>Dados da visita</h2>
+    <dl class="dl">
+      <dt>E-mail</dt><dd>{{ p.visitor_email }}</dd>
+      <dt>Documento</dt><dd>{{ p.visitor_document or '—' }}</dd>
+      <dt>Empresa</dt><dd>{{ p.company or '—' }}</dd>
+      <dt>Anfitrião</dt><dd>{{ p.host_name }}{% if p.host_email %} <small class="muted">({{ p.host_email }})</small>{% endif %}</dd>
+      <dt>Entrada</dt><dd>{{ p.visit_start.strftime('%d/%m/%Y %H:%M') }}</dd>
+      <dt>Saída</dt><dd>{{ p.visit_end.strftime('%d/%m/%Y %H:%M') }}</dd>
+      <dt>Motivo</dt><dd>{{ p.purpose or '—' }}</dd>
+      <dt>Código</dt><dd><code>{{ p.short_code }}</code></dd>
+      <dt>Criado em</dt><dd>{{ p.created_at.strftime('%d/%m/%Y %H:%M') }}{% if p.created_by %} por {{ p.created_by.name }}{% endif %}</dd>
+      <dt>Lembrete</dt><dd>{{ p.reminder_sent_at.strftime('%d/%m/%Y %H:%M') if p.reminder_sent_at else 'Pendente' }}</dd>
+    </dl>
+
+    <div class="actions wrap">
+      <a class="btn" href="{{ url_for('passes.edit', pass_id=p.id) }}">Editar</a>
+      <form method="post" action="{{ url_for('passes.resend', pass_id=p.id) }}" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn" type="submit">Reenviar e-mail</button>
+      </form>
+      {% if p.status == 'ativo' %}
+      <form method="post" action="{{ url_for('passes.revoke', pass_id=p.id) }}" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-warning" type="submit">Revogar</button>
+      </form>
+      {% else %}
+      <form method="post" action="{{ url_for('passes.reactivate', pass_id=p.id) }}" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn" type="submit">Reativar</button>
+      </form>
+      {% endif %}
+      <details class="confirm">
+        <summary class="btn btn-danger">Excluir</summary>
+        <div class="confirm-box">
+          <p>Excluir definitivamente este cartão?</p>
+          <form method="post" action="{{ url_for('passes.delete', pass_id=p.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-danger" type="submit">Sim, excluir</button>
+          </form>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section class="card wallet">
+    <h2>Cartão digital</h2>
+    <div class="pass-preview">
+      <div class="pass-top">
+        <span>{{ company_name }}</span>
+        <small>Visitante</small>
+      </div>
+      <div class="pass-name">{{ p.visitor_name }}</div>
+      <div class="pass-row">
+        <div><small>Empresa</small>{{ p.company or '—' }}</div>
+        <div><small>Anfitrião</small>{{ p.host_name }}</div>
+      </div>
+      <div class="pass-row">
+        <div><small>Entrada</small>{{ p.visit_start.strftime('%d/%m %H:%M') }}</div>
+        <div><small>Saída</small>{{ p.visit_end.strftime('%d/%m %H:%M') }}</div>
+      </div>
+      <div class="pass-qr">
+        <img src="{{ url_for('passes.qr_svg', pass_id=p.id) }}" alt="QR Code do cartão">
+        <small>{{ p.short_code }}</small>
+      </div>
+    </div>
+
+    {% if save_url %}
+      <a class="btn btn-wallet btn-block" href="{{ save_url }}" target="_blank" rel="noopener">Adicionar ao Google Wallet</a>
+    {% elif not wallet_enabled %}
+      <div class="alert alert-info">
+        <strong>Modo demonstração:</strong> configure <code>WALLET_ISSUER_ID</code> e
+        <code>GOOGLE_APPLICATION_CREDENTIALS</code> para gerar o link do Google Wallet.
+      </div>
+    {% endif %}
+    <p class="muted small">Verificação na portaria: <a href="{{ verify_url }}" target="_blank">{{ verify_url }}</a></p>
+
+    <details>
+      <summary>Objeto enviado à Google Wallet API (JSON)</summary>
+      <pre class="code">{{ wallet_json }}</pre>
+    </details>
+  </section>
+</div>
+{% endblock %}
